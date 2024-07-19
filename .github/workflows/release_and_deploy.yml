@@ -67,7 +67,7 @@ jobs:
         with:
           commit: ${{ needs.ref.outputs.refspec }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          branch: "production-app"
+          branch: "staging-app"
 
     outputs:
       deployed-commit: ${{ steps.push_to_branch.outputs.deployed-commit }}
