@@ -71,12 +71,18 @@ const getPassportDatabaseAccessToken = async (
     message,
   });
 
-  const { data } = await axios.post<AuthResponse>(
-    `${CERAMIC_CACHE_ENDPOINT}/authenticate/v2`,
-    { message: siweParams, signature }
-  );
+  let authResponse;
+  try {
+    authResponse = await axios.post<AuthResponse>(
+      `${CERAMIC_CACHE_ENDPOINT}/authenticate/v2`,
+      { message: siweParams, signature }
+    );
+  } catch (e: any) {
+    const detail = e?.response?.data?.detail || e?.response?.data?.message || e?.message;
+    throw new Error(`Sign-in failed: ${detail}`);
+  }
 
-  return data.access;
+  return authResponse.data.access;
 };
 
 // In the app, the context hook should be used. This is only exported for testing
