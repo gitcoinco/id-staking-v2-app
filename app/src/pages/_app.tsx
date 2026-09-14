@@ -25,6 +25,14 @@ datadogLogs.init({
   sessionSampleRate: 100,
   service: `${process.env.NEXT_PUBLIC_DATADOG_SERVICE}`,
   env: `${process.env.NEXT_PUBLIC_DATADOG_ENV}`,
+  beforeSend: (log) => {
+    // Drop WalletConnect Core's internal reconnect-logger storm.
+    // These fire with blank message + @context "core/relayer" at level 50,
+    // ~5ms apart with no backoff — inflating ingestion without surfacing
+    // user-facing failures. See holonym-foundation/internal-docs#2898.
+    if (log.message === "" && (log as Record<string, unknown>)["@context"]?.toString().startsWith("core/")) return false;
+    return true;
+  },
 });
 
 const RenderOnlyOnClient = ({ children }: { children: React.ReactNode }) => {
